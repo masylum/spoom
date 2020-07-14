@@ -30,6 +30,13 @@ module Spoom
         File.delete(sorbet_config_path) if File.exist?(sorbet_config_path)
       end
 
+      def simple_config
+        <<~CFG
+          .
+          --ignore=errors
+        CFG
+      end
+
       def install_sorbet
         Spoom::Sorbet.bundle_install(project_path)
       end

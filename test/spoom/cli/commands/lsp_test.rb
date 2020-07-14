@@ -173,15 +173,6 @@ module Spoom
              * /lib/types.rb:3:6-3:14
           MSG
         end
-
-        private
-
-        def simple_config
-          <<~CFG
-            .
-            --ignore=errors
-          CFG
-        end
       end
     end
   end
