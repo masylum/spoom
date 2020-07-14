@@ -87,8 +87,13 @@ module Spoom
 
         def <=>(other)
           return 0 unless other.is_a?(Error)
-          return line <=> other.line if file == other.file
-          file <=> other.file
+          res = file <=> other.file
+          return res unless res == 0
+          res = line <=> other.line
+          return res unless res == 0
+          res = code <=> other.code
+          return res unless res == 0
+          message <=> other.message
         end
 
         def to_s
