@@ -4,6 +4,7 @@
 require "spoom/sorbet/config"
 require "spoom/sorbet/errors"
 require "spoom/sorbet/lsp"
+require "spoom/sorbet/metrics"
 
 require "open3"
 
@@ -36,19 +37,19 @@ module Spoom
       end
     end
 
-    def self.run_srb_tc(work_dir = '.', opts = {})
+    def self.run_srb_tc(work_dir = '.', args = [], opts = {})
       Bundler.with_clean_env do
         opts[:chdir] = File.expand_path(work_dir)
-        Open3.popen2("bundle", "exec", "srb", "tc") do |_, out, thread|
+        Open3.popen2("bundle exec srb tc #{args.join(' ')}", opts) do |_, out, thread|
           return out.read, thread.value
         end
       end
     end
 
-    def self.run_srb_tc_and_capture_errors(work_dir = '.', opts = {})
+    def self.run_srb_tc_and_capture_errors(work_dir = '.', args = [], opts = {})
       Bundler.with_clean_env do
         opts[:chdir] = File.expand_path(work_dir)
-        Open3.popen2e("bundle", "exec", "srb", "tc") do |_, out, thread|
+        Open3.popen2e("bundle exec srb tc #{args.join(' ')}", opts) do |_, out, thread|
           return out.read, thread.value
         end
       end

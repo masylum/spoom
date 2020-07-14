@@ -101,6 +101,30 @@ module Spoom
             Errors: 1 shown, 7 total
           MSG
         end
+
+        # Metrics
+
+        def test_display_metrics
+          set_sorbet_config(simple_config)
+          out, err = run_cli(project_path, "tc metrics")
+          assert_equal(<<~MSG, err)
+            No errors! Great job.
+          MSG
+          assert_equal(<<~MSG, out)
+
+            Sigils:
+              files: 6
+              true: 6 (100%)
+
+            Methods:
+              methods: 22
+              signatures: 2 (9%)
+
+            Sends:
+              sends: 51
+              typed: 47 (92%)
+          MSG
+        end
       end
     end
   end

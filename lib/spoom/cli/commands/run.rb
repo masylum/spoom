@@ -56,13 +56,25 @@ module Spoom
           1
         end
 
+        desc "metrics", "run srb tc and display metrics"
+        def metrics
+          in_sorbet_project!
+
+          run_sorbet(["--metrics-file=metrics.tmp"])
+          json_string = File.read("metrics.tmp")
+          metrics = Spoom::Sorbet::Metrics.parse_string(json_string)
+          File.delete("metrics.tmp")
+          puts ""
+          metrics.to_console
+        end
+
         no_commands do
-          def run_sorbet
-            Spoom::Sorbet.run_srb_tc
+          def run_sorbet(args = [])
+            Spoom::Sorbet.run_srb_tc('.', args)
           end
 
-          def run_and_filter
-            Spoom::Sorbet.run_srb_tc_and_capture_errors
+          def run_and_filter(args = [])
+            Spoom::Sorbet.run_srb_tc_and_capture_errors('.', args)
           end
 
           def colorize_code(code, colors = true)
