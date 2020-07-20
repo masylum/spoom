@@ -63,28 +63,28 @@ module Spoom
         "Metrics<#{repo}-#{timestamp}-#{status}>"
       end
 
-      sig { void }
-      def to_console
+      sig { params(out: T.any(IO, StringIO)).void }
+      def show(out = $stdout)
         files = files_count
 
-        puts "Sigils:"
-        puts "  files: #{files}"
+        out.puts "Sigils:"
+        out.puts "  files: #{files}"
         files_by_sigils.each do |sigil, value|
           next unless value
-          puts "  #{sigil}: #{value} (#{percent(value, files)})"
+          out.puts "  #{sigil}: #{value} (#{percent(value, files)})"
         end
 
-        puts "\nMethods:"
+        out.puts "\nMethods:"
         m = metrics['types.input.methods.total']
         s = metrics['types.sig.count']
-        puts "  methods: #{m}"
-        puts "  signatures: #{s} (#{percent(s, m)})"
+        out.puts "  methods: #{m}"
+        out.puts "  signatures: #{s} (#{percent(s, m)})"
 
-        puts "\nSends:"
+        out.puts "\nSends:"
         t = metrics['types.input.sends.typed']
         s = metrics['types.input.sends.total']
-        puts "  sends: #{s}"
-        puts "  typed: #{t} (#{percent(t, s)})"
+        out.puts "  sends: #{s}"
+        out.puts "  typed: #{t} (#{percent(t, s)})"
       end
 
       private
