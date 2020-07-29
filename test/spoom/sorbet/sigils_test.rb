@@ -6,68 +6,34 @@ require "test_helper"
 module Spoom
   module Sorbet
     class SigilsTest < Minitest::Test
-      def test_sigil_nonempty
-        sigil = Sigils.sigil("false")
+      def test_sigil_returns_the_sigil_from_a_strictness_string
+        sigil = Sigils.sigil_string("false")
         assert_equal("# typed: false", sigil)
       end
 
-      def test_sigil_empty
-        sigil = Sigils.sigil("")
+      def test_sigil_empty_returns_sigil_without_strictness
+        sigil = Sigils.sigil_string("")
         assert_equal("# typed: ", sigil)
       end
 
-      def test_valid_strictness_ignore
-        content = <<~STR
-          # typed: ignore
-          class A; end
-        STR
-
-        assert(Sigils.valid_strictness?(content))
+      def test_valid_strictness_returns_true
+        ["ignore", "false", "true", "strict", "strong", "   strong   "].each do |strictness|
+          content = <<~STR
+            # typed: #{strictness}
+            class A; end
+          STR
+          assert(Sigils.valid_strictness?(content))
+        end
       end
 
       def test_valid_strictness_false
-        content = <<~STR
-          # typed: false
-          class A; end
-        STR
-
-        assert(Sigils.valid_strictness?(content))
-      end
-
-      def test_valid_strictness_true
-        content = <<~STR
-          # typed: true
-          class A; end
-        STR
-
-        assert(Sigils.valid_strictness?(content))
-      end
-
-      def test_valid_strictness_strict
-        content = <<~STR
-          # typed: strict
-          class A; end
-        STR
-
-        assert(Sigils.valid_strictness?(content))
-      end
-
-      def test_valid_strictness_strong
-        content = <<~STR
-          # typed: strong
-          class A; end
-        STR
-
-        assert(Sigils.valid_strictness?(content))
-      end
-
-      def test_valid_strictness_invalid_return_false
-        content = <<~STR
-          # typed: asdf
-          class A; end
-        STR
-
-        refute(Sigils.valid_strictness?(content))
+        ["", "FALSE", "foo"].each do |strictness|
+          content = <<~STR
+            # typed: #{strictness}
+            class A; end
+          STR
+          refute(Sigils.valid_strictness?(content))
+        end
       end
 
       def test_valid_strictness_none_return_false
@@ -78,87 +44,26 @@ module Spoom
         refute(Sigils.valid_strictness?(content))
       end
 
-      def test_strictness_return_ignore
-        content = <<~STR
-          # typed: ignore
-          class A; end
-        STR
+      def test_strictness_return_expected
+        ["ignore", "false", "true", "strict", "strong", "   strong   ", "foo", ""].each do |strictness|
+          content = <<~STR
+            # typed: #{strictness}
+            class A; end
+          STR
 
-        strictness = Sigils.strictness(content)
+          strictness_found = Sigils.strictness(content)
 
-        assert_equal("ignore", strictness)
+          assert_equal(strictness.strip, strictness_found)
+        end
       end
 
-      def test_strictness_return_false
-        content = <<~STR
-          # typed: false
-          class A; end
-        STR
-
-        strictness = Sigils.strictness(content)
-
-        assert_equal("false", strictness)
-      end
-
-      def test_strictness_return_true
-        content = <<~STR
-          # typed: true
-          class A; end
-        STR
-
-        strictness = Sigils.strictness(content)
-
-        assert_equal("true", strictness)
-      end
-
-      def test_strictness_return_strict
-        content = <<~STR
-          # typed: strict
-          class A; end
-        STR
-
-        strictness = Sigils.strictness(content)
-
-        assert_equal("strict", strictness)
-      end
-
-      def test_strictness_return_strong
-        content = <<~STR
-          # typed: strong
-          class A; end
-        STR
-
-        strictness = Sigils.strictness(content)
-        assert_equal(strictness, "strong")
-      end
-
-      def test_strictness_no_sigil
+      def test_strictness_no_sigil_returns_nil
         content = <<~STR
           class A; end
         STR
 
         strictness = Sigils.strictness(content)
         assert_nil(strictness)
-      end
-
-      def test_strictness_invalid_sigil_return
-        content = <<~STR
-          #typed: no
-          class A; end
-        STR
-
-        strictness = Sigils.strictness(content)
-        assert_equal("no", strictness)
-      end
-
-      def test_strictness_empty
-        content = <<~STR
-          # typed:
-          class A; end
-        STR
-
-        strictness = Sigils.strictness(content)
-        assert_equal("", strictness)
       end
 
       def test_strictness_first_valid_return

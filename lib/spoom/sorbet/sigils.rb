@@ -6,12 +6,12 @@ module Spoom
     module Sigils
       extend T::Sig
 
-      VALID_STRICTNESS = ["ignore", "false", "true", "strict", "strong"].freeze
-      SIGIL_REGEXP = /^#\s*typed\s*:\s*(\w*)$/.freeze
+      VALID_STRICTNESS = ["ignore", "false", "true", "strict", "strong", "__STDLIB_INTERNAL"].freeze
+      SIGIL_REGEXP = /^#\s*typed\s*:\s*(\w*)\s*$/.freeze
 
       # returns the full sigil comment string for the passed strictness
       sig { params(strictness: String).returns(String) }
-      def self.sigil(strictness)
+      def self.sigil_string(strictness)
         "# typed: #{strictness}"
       end
 
@@ -24,15 +24,13 @@ module Spoom
       # returns the strictness of a sigil in the passed file content string (nil if no sigil)
       sig { params(content: String).returns(T.nilable(String)) }
       def self.strictness(content)
-        matchdata = SIGIL_REGEXP.match(content)
-
-        matchdata[1] if matchdata
+        SIGIL_REGEXP.match(content)&.[](1)
       end
 
       # returns a string which is the passed content but with the sigil updated to a new strictness
       sig { params(content: String, new_strictness: String).returns(String) }
       def self.update_sigil(content, new_strictness)
-        content.sub(SIGIL_REGEXP, sigil(new_strictness))
+        content.sub(SIGIL_REGEXP, sigil_string(new_strictness))
       end
     end
   end

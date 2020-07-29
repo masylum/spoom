@@ -27,7 +27,7 @@ module Spoom
 
           errors = Spoom::Sorbet::Errors::Parser.parse_string(output)
 
-          files_with_errors = Bump.file_names_from_error(errors)
+          files_with_errors = errors.map(&:file).compact
 
           Bump.change_sigil_in_files(files_with_errors, "false")
         end
@@ -49,12 +49,7 @@ module Spoom
             end
           end
 
-          # returns an array of the file names present in the passed
-          sig { params(errors: T::Array[Spoom::Sorbet::Errors::Error]).returns(T::Array[String]) }
-          def self.file_names_from_error(errors)
-            errors.map(&:file).compact
-          end
-
+          # TODO: back to lib
           # returns a string containing the strictness of a sigil in a file at the passed path
           # * returns nil if no sigil
           sig { params(path: T.any(String, Pathname)).returns(T.nilable(String)) }
@@ -63,6 +58,7 @@ module Spoom
             Spoom::Sorbet::Sigils.strictness(content)
           end
 
+          # TODO: back to lib
           # changes the sigil in the file at the passed path to the specified new strictness
           sig { params(path: T.any(String, Pathname), new_strictness: String).void }
           def self.change_sigil_in_file(path, new_strictness)
@@ -70,6 +66,7 @@ module Spoom
             File.write(path, Spoom::Sorbet::Sigils.update_sigil(content, new_strictness))
           end
 
+          # TODO: back to lib
           # changes the sigil to have a new strictness in a list of files
           sig { params(path_list: T::Array[String], new_strictness: String).returns(T::Array[String]) }
           def self.change_sigil_in_files(path_list, new_strictness)

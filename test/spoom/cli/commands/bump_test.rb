@@ -12,7 +12,7 @@ module Spoom
         include Spoom::Cli::TestHelper
         extend Spoom::Cli::TestHelper
 
-        TEMPORARY_DIRECTORY = "temp"
+        TEMPORARY_DIRECTORY = "test-bump"
 
         def teardown
           FileUtils.remove_dir(TEMPORARY_DIRECTORY, true)
@@ -69,17 +69,6 @@ module Spoom
           ]
 
           assert_equal(expected_files, files)
-        end
-
-        def test_file_names_from_errors
-          errors = []
-          errors << Spoom::Sorbet::Errors::Error.new("file1", 1, "", 1)
-          errors << Spoom::Sorbet::Errors::Error.new("file2", 2, "", 2)
-          errors << Spoom::Sorbet::Errors::Error.new("file3", 3, "", 3)
-
-          files = Bump.file_names_from_error(errors)
-
-          assert_equal(["file1", "file2", "file3"], files)
         end
 
         def test_file_strictness_with_valid_sigil
