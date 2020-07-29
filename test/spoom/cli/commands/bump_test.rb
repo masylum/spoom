@@ -1,4 +1,4 @@
-# typed: false
+# typed: true
 # frozen_string_literal: true
 
 require 'pathname'
@@ -19,12 +19,12 @@ module Spoom
         end
 
         def test_bump_files_one_error_one_no_error_acceptance
-          content1  = <<~STR
+          content1 = <<~STR
             # typed: false
             class A; end
           STR
 
-          content2  = <<~STR
+          content2 = <<~STR
             # typed: false
             T.reveal_type(1.to_s)
           STR
@@ -34,7 +34,7 @@ module Spoom
           File.write("#{TEMPORARY_DIRECTORY}/file1.rb", content1)
           File.write("#{TEMPORARY_DIRECTORY}/file2.rb", content2)
 
-          Bump.new.bump(TEMPORARY_DIRECTORY, "rb")
+          Bump.new.bump(TEMPORARY_DIRECTORY)
 
           strictness1 = Bump.file_strictness("#{TEMPORARY_DIRECTORY}/file1.rb")
           strictness2 = Bump.file_strictness("#{TEMPORARY_DIRECTORY}/file2.rb")
@@ -52,8 +52,6 @@ module Spoom
             # typed: true
           STR
 
-          temporary_directory = "temp2"
-
           FileUtils.mkdir_p(TEMPORARY_DIRECTORY)
           FileUtils.mkdir_p("#{TEMPORARY_DIRECTORY}/nested")
 
@@ -63,9 +61,12 @@ module Spoom
           File.write("#{TEMPORARY_DIRECTORY}/nested/false.tmp", content_false)
           File.write("#{TEMPORARY_DIRECTORY}/nested/true.tmp", content_true)
 
-          files = Bump.files_with_sigil_strictness("#{TEMPORARY_DIRECTORY}", "false", "tmp").sort
-          expected_files = ["#{File.expand_path(TEMPORARY_DIRECTORY)}/false.tmp",
-            "#{File.expand_path(TEMPORARY_DIRECTORY)}/nested/false.tmp"]
+          files = Bump.files_with_sigil_strictness(TEMPORARY_DIRECTORY, "false", ".tmp").sort
+
+          expected_files = [
+            "#{File.expand_path(TEMPORARY_DIRECTORY)}/false.tmp",
+            "#{File.expand_path(TEMPORARY_DIRECTORY)}/nested/false.tmp",
+          ]
 
           assert_equal(expected_files, files)
         end
@@ -82,7 +83,7 @@ module Spoom
         end
 
         def test_file_strictness_with_valid_sigil
-          content  = <<~STR
+          content = <<~STR
             # typed: true
             class A; end
           STR
@@ -97,7 +98,7 @@ module Spoom
         end
 
         def test_file_strictness_with_invalid_sigil
-          content  = <<~STR
+          content = <<~STR
             # typed: asdf
             class A; end
           STR

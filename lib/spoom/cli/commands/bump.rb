@@ -1,4 +1,4 @@
-# typed: false
+# typed: true
 # frozen_string_literal: true
 
 require 'find'
@@ -15,9 +15,9 @@ module Spoom
         default_task :bump
 
         desc "bump", "bump Sorbet sigils from `false` to `true` when no errors"
-        sig { params(directory: String, extension: String).returns(T::Array[String]) }
-        def bump(directory = ".", extension = "rb")
-          files_to_bump = Bump.files_with_sigil_strictness(directory, "false", extension)
+        sig { params(directory: String).void }
+        def bump(directory = ".")
+          files_to_bump = Bump.files_with_sigil_strictness(directory, "false")
 
           Bump.change_sigil_in_files(files_to_bump, "true")
 
@@ -40,11 +40,10 @@ module Spoom
               strictness: String,
               extension: String
             )
-            .returns(T::Array[String])
+              .returns(T::Array[String])
           end
-          def self.files_with_sigil_strictness(directory, strictness, extension = "rb")
-            paths = Dir.glob("#{File.expand_path(directory)}/**/*.#{extension}")
-
+          def self.files_with_sigil_strictness(directory, strictness, extension = ".rb")
+            paths = Dir.glob("#{File.expand_path(directory)}/**/*#{extension}")
             paths.filter do |path|
               file_strictness(path) == strictness
             end
@@ -53,7 +52,7 @@ module Spoom
           # returns an array of the file names present in the passed
           sig { params(errors: T::Array[Spoom::Sorbet::Errors::Error]).returns(T::Array[String]) }
           def self.file_names_from_error(errors)
-            errors.map { |err| err.file }
+            errors.map(&:file).compact
           end
 
           # returns a string containing the strictness of a sigil in a file at the passed path
@@ -72,7 +71,7 @@ module Spoom
           end
 
           # changes the sigil to have a new strictness in a list of files
-          sig { params(path_list: T::Array[T.any(String, Pathname)], new_strictness: String).returns(T::Array[String]) }
+          sig { params(path_list: T::Array[String], new_strictness: String).returns(T::Array[String]) }
           def self.change_sigil_in_files(path_list, new_strictness)
             path_list.each do |path|
               change_sigil_in_file(path, new_strictness)

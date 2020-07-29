@@ -17,7 +17,7 @@ module Spoom
       end
 
       def test_valid_strictness_ignore
-        content  = <<~STR
+        content = <<~STR
           # typed: ignore
           class A; end
         STR
@@ -26,7 +26,7 @@ module Spoom
       end
 
       def test_valid_strictness_false
-        content  = <<~STR
+        content = <<~STR
           # typed: false
           class A; end
         STR
@@ -35,7 +35,7 @@ module Spoom
       end
 
       def test_valid_strictness_true
-        content  = <<~STR
+        content = <<~STR
           # typed: true
           class A; end
         STR
@@ -44,7 +44,7 @@ module Spoom
       end
 
       def test_valid_strictness_strict
-        content  = <<~STR
+        content = <<~STR
           # typed: strict
           class A; end
         STR
@@ -53,7 +53,7 @@ module Spoom
       end
 
       def test_valid_strictness_strong
-        content  = <<~STR
+        content = <<~STR
           # typed: strong
           class A; end
         STR
@@ -62,7 +62,7 @@ module Spoom
       end
 
       def test_valid_strictness_invalid_return_false
-        content  = <<~STR
+        content = <<~STR
           # typed: asdf
           class A; end
         STR
@@ -71,7 +71,7 @@ module Spoom
       end
 
       def test_valid_strictness_none_return_false
-        content  = <<~STR
+        content = <<~STR
           class A; end
         STR
 
@@ -79,7 +79,7 @@ module Spoom
       end
 
       def test_strictness_return_ignore
-        content  = <<~STR
+        content = <<~STR
           # typed: ignore
           class A; end
         STR
@@ -90,7 +90,7 @@ module Spoom
       end
 
       def test_strictness_return_false
-        content  = <<~STR
+        content = <<~STR
           # typed: false
           class A; end
         STR
@@ -101,7 +101,7 @@ module Spoom
       end
 
       def test_strictness_return_true
-        content  = <<~STR
+        content = <<~STR
           # typed: true
           class A; end
         STR
@@ -112,7 +112,7 @@ module Spoom
       end
 
       def test_strictness_return_strict
-        content  = <<~STR
+        content = <<~STR
           # typed: strict
           class A; end
         STR
@@ -123,7 +123,7 @@ module Spoom
       end
 
       def test_strictness_return_strong
-        content  = <<~STR
+        content = <<~STR
           # typed: strong
           class A; end
         STR
@@ -133,7 +133,7 @@ module Spoom
       end
 
       def test_strictness_no_sigil
-        content  = <<~STR
+        content = <<~STR
           class A; end
         STR
 
@@ -142,7 +142,7 @@ module Spoom
       end
 
       def test_strictness_invalid_sigil_return
-        content  = <<~STR
+        content = <<~STR
           #typed: no
           class A; end
         STR
@@ -162,7 +162,7 @@ module Spoom
       end
 
       def test_strictness_first_valid_return
-        content  = <<~STR
+        content = <<~STR
           # typed: true
           # typed: strict
           class A; end
@@ -173,7 +173,7 @@ module Spoom
       end
 
       def test_strictness_first_invalid_return
-        content  = <<~STR
+        content = <<~STR
           # typed: no
           # typed: strict
           class A; end
