@@ -6,7 +6,21 @@ module Spoom
     module Sigils
       extend T::Sig
 
-      VALID_STRICTNESS = ["ignore", "false", "true", "strict", "strong", "__STDLIB_INTERNAL"].freeze
+      STRICTNESS_IGNORE = "ignore"
+      STRICTNESS_FALSE = "false"
+      STRICTNESS_TRUE = "true"
+      STRICTNESS_STRICT = "strict"
+      STRICTNESS_STRONG = "strong"
+      STRICTNESS_INTERNAL = "__STDLIB_INTERNAL"
+
+      VALID_STRICTNESS = [
+        STRICTNESS_IGNORE,
+        STRICTNESS_FALSE,
+        STRICTNESS_TRUE,
+        STRICTNESS_STRICT,
+        STRICTNESS_STRONG,
+        STRICTNESS_INTERNAL,
+      ].freeze
       SIGIL_REGEXP = /^#\s*typed\s*:\s*(\w*)\s*$/.freeze
 
       # returns the full sigil comment string for the passed strictness
@@ -31,6 +45,45 @@ module Spoom
       sig { params(content: String, new_strictness: String).returns(String) }
       def self.update_sigil(content, new_strictness)
         content.sub(SIGIL_REGEXP, sigil_string(new_strictness))
+      end
+
+      # returns a string containing the strictness of a sigil in a file at the passed path
+      # * returns nil if no sigil
+      sig { params(path: T.any(String, Pathname)).returns(T.nilable(String)) }
+      def self.file_strictness(path)
+        content = File.read(path)
+        strictness(content)
+      end
+
+      # changes the sigil in the file at the passed path to the specified new strictness
+      sig { params(path: T.any(String, Pathname), new_strictness: String).void }
+      def self.change_sigil_in_file(path, new_strictness)
+        content = File.read(path)
+        File.write(path, update_sigil(content, new_strictness))
+      end
+
+      # changes the sigil to have a new strictness in a list of files
+      sig { params(path_list: T::Array[String], new_strictness: String).returns(T::Array[String]) }
+      def self.change_sigil_in_files(path_list, new_strictness)
+        path_list.each do |path|
+          change_sigil_in_file(path, new_strictness)
+        end
+      end
+
+      # finds all files in the specified directory with the passed strictness
+      sig do
+        params(
+          directory: T.any(String, Pathname),
+          strictness: String,
+          extension: String
+        )
+          .returns(T::Array[String])
+      end
+      def self.files_with_sigil_strictness(directory, strictness, extension = ".rb")
+        paths = Dir.glob("#{File.expand_path(directory)}/**/*#{extension}")
+        paths.filter do |path|
+          file_strictness(path) == strictness
+        end
       end
     end
   end

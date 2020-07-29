@@ -17,9 +17,9 @@ module Spoom
         desc "bump", "bump Sorbet sigils from `false` to `true` when no errors"
         sig { params(directory: String).void }
         def bump(directory = ".")
-          files_to_bump = Bump.files_with_sigil_strictness(directory, "false")
+          files_to_bump = Spoom::Sorbet::Sigils.files_with_sigil_strictness(directory, "false")
 
-          Bump.change_sigil_in_files(files_to_bump, "true")
+          Spoom::Sorbet::Sigils.change_sigil_in_files(files_to_bump, "true")
 
           output, no_errors = Spoom::Sorbet.srb_tc(File.expand_path(directory), capture_err: true)
 
@@ -29,51 +29,10 @@ module Spoom
 
           files_with_errors = errors.map(&:file).compact
 
-          Bump.change_sigil_in_files(files_with_errors, "false")
+          Spoom::Sorbet::Sigils.change_sigil_in_files(files_with_errors, "false")
         end
 
         no_commands do
-          # finds all files in the specified directory with the passed strictness
-          sig do
-            params(
-              directory: T.any(String, Pathname),
-              strictness: String,
-              extension: String
-            )
-              .returns(T::Array[String])
-          end
-          def self.files_with_sigil_strictness(directory, strictness, extension = ".rb")
-            paths = Dir.glob("#{File.expand_path(directory)}/**/*#{extension}")
-            paths.filter do |path|
-              file_strictness(path) == strictness
-            end
-          end
-
-          # TODO: back to lib
-          # returns a string containing the strictness of a sigil in a file at the passed path
-          # * returns nil if no sigil
-          sig { params(path: T.any(String, Pathname)).returns(T.nilable(String)) }
-          def self.file_strictness(path)
-            content = File.read(path)
-            Spoom::Sorbet::Sigils.strictness(content)
-          end
-
-          # TODO: back to lib
-          # changes the sigil in the file at the passed path to the specified new strictness
-          sig { params(path: T.any(String, Pathname), new_strictness: String).void }
-          def self.change_sigil_in_file(path, new_strictness)
-            content = File.read(path)
-            File.write(path, Spoom::Sorbet::Sigils.update_sigil(content, new_strictness))
-          end
-
-          # TODO: back to lib
-          # changes the sigil to have a new strictness in a list of files
-          sig { params(path_list: T::Array[String], new_strictness: String).returns(T::Array[String]) }
-          def self.change_sigil_in_files(path_list, new_strictness)
-            path_list.each do |path|
-              change_sigil_in_file(path, new_strictness)
-            end
-          end
         end
       end
     end
