@@ -15,15 +15,17 @@ module Spoom
         default_task :bump
 
         desc "bump", "change Sorbet sigils from one strictness to another when no errors"
-        sig { params(directory: String, from: String, to: String).void }
-        def bump(
-          directory = ".",
-          from = Sorbet::Sigils::STRICTNESS_FALSE,
-          to = Sorbet::Sigils::STRICTNESS_TRUE
-        )
+        option :from, type: :string
+        option :to, type: :string
+        sig { params(directory: String).void }
+        def bump(directory = ".")
+          # Q: default values for from and to?
+          from = options[:from] ? options[:from] : Sorbet::Sigils::STRICTNESS_FALSE
+          to = options[:to] ? options[:to] : Sorbet::Sigils::STRICTNESS_TRUE
+
           # TODO: raise error in this case? risky otherwise? test without reporting errors
-          raise StandardError.new("Invalid 'from' strictness") unless Sorbet::Sigils.valid_strictness?(from)
-          raise StandardError.new("Invalid 'to' strictness") unless Sorbet::Sigils.valid_strictness?(to)
+          raise(StandardError.new, "Invalid 'from' strictness") unless Sorbet::Sigils.valid_strictness?(from)
+          raise(StandardError.new, "Invalid 'to' strictness") unless Sorbet::Sigils.valid_strictness?(to)
 
           files_to_bump = Sorbet::Sigils.files_with_sigil_strictness(directory, from)
 

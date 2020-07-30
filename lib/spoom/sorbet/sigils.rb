@@ -29,15 +29,15 @@ module Spoom
         "# typed: #{strictness}"
       end
 
-      # returns true if the passed string is a sigil with valid strictness (else false)
-      sig { params(content: String).returns(T::Boolean) }
-      def self.valid_strictness?(content)
-        VALID_STRICTNESS.include?(strictness(content))
+      # returns true if the passed string is a valid strictness (else false)
+      sig { params(strictness: String).returns(T::Boolean) }
+      def self.valid_strictness?(strictness)
+        VALID_STRICTNESS.include?(strictness)
       end
 
       # returns the strictness of a sigil in the passed file content string (nil if no sigil)
       sig { params(content: String).returns(T.nilable(String)) }
-      def self.strictness(content)
+      def self.strictness_in_content(content)
         SIGIL_REGEXP.match(content)&.[](1)
       end
 
@@ -52,7 +52,7 @@ module Spoom
       sig { params(path: T.any(String, Pathname)).returns(T.nilable(String)) }
       def self.file_strictness(path)
         content = File.read(path)
-        strictness(content)
+        strictness_in_content(content)
       end
 
       # changes the sigil in the file at the passed path to the specified new strictness
@@ -63,6 +63,7 @@ module Spoom
       end
 
       # changes the sigil to have a new strictness in a list of files
+      # TODO: parameter to make sure all files initially have the same strictness
       sig { params(path_list: T::Array[String], new_strictness: String).returns(T::Array[String]) }
       def self.change_sigil_in_files(path_list, new_strictness)
         path_list.each do |path|
@@ -80,6 +81,7 @@ module Spoom
           .returns(T::Array[String])
       end
       def self.files_with_sigil_strictness(directory, strictness, extension = ".rb")
+        # TODO: make sure the result contains unique entries
         paths = Dir.glob("#{File.expand_path(directory)}/**/*#{extension}")
         paths.filter do |path|
           file_strictness(path) == strictness
