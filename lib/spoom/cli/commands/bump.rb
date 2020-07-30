@@ -14,22 +14,30 @@ module Spoom
 
         default_task :bump
 
-        desc "bump", "bump Sorbet sigils from `false` to `true` when no errors"
-        sig { params(directory: String).void }
-        def bump(directory = ".")
-          files_to_bump = Spoom::Sorbet::Sigils.files_with_sigil_strictness(directory, "false")
+        desc "bump", "change Sorbet sigils from one strictness to another when no errors"
+        sig { params(directory: String, from: String, to: String).void }
+        def bump(
+          directory = ".",
+          from = Sorbet::Sigils::STRICTNESS_FALSE,
+          to = Sorbet::Sigils::STRICTNESS_TRUE
+        )
+          # TODO: raise error in this case? risky otherwise? test without reporting errors
+          raise StandardError.new("Invalid 'from' strictness") unless Sorbet::Sigils.valid_strictness?(from)
+          raise StandardError.new("Invalid 'to' strictness") unless Sorbet::Sigils.valid_strictness?(to)
 
-          Spoom::Sorbet::Sigils.change_sigil_in_files(files_to_bump, "true")
+          files_to_bump = Sorbet::Sigils.files_with_sigil_strictness(directory, from)
 
-          output, no_errors = Spoom::Sorbet.srb_tc(File.expand_path(directory), capture_err: true)
+          Sorbet::Sigils.change_sigil_in_files(files_to_bump, to)
+
+          output, no_errors = Sorbet.srb_tc(File.expand_path(directory), capture_err: true)
 
           return [] if no_errors
 
-          errors = Spoom::Sorbet::Errors::Parser.parse_string(output)
+          errors = Sorbet::Errors::Parser.parse_string(output)
 
           files_with_errors = errors.map(&:file).compact
 
-          Spoom::Sorbet::Sigils.change_sigil_in_files(files_with_errors, "false")
+          Sorbet::Sigils.change_sigil_in_files(files_with_errors, from)
         end
 
         no_commands do
