@@ -17,15 +17,21 @@ module Spoom
         desc "bump", "change Sorbet sigils from one strictness to another when no errors"
         option :from, type: :string
         option :to, type: :string
+        option :force, type: :boolean, default: false, aliases: :f #or bool? what is normal default for a boolean? check
         sig { params(directory: String).void }
         def bump(directory = ".")
-          # Q: default values for from and to?
           from = options[:from] ? options[:from] : Sorbet::Sigils::STRICTNESS_FALSE
           to = options[:to] ? options[:to] : Sorbet::Sigils::STRICTNESS_TRUE
 
-          # TODO: raise error in this case? risky otherwise? test without reporting errors
-          raise(StandardError.new, "Invalid 'from' strictness") unless Sorbet::Sigils.valid_strictness?(from)
-          raise(StandardError.new, "Invalid 'to' strictness") unless Sorbet::Sigils.valid_strictness?(to)
+          unless Sorbet::Sigils.valid_strictness?(from)
+            say_error("Invalid strictness #{from} for option --from")
+            exit(1)
+          end
+
+          unless Sorbet::Sigils.valid_strictness?(to)
+            say_error("Invalid strictness #{to} for option --to")
+            exit(1)
+          end
 
           files_to_bump = Sorbet::Sigils.files_with_sigil_strictness(directory, from)
 

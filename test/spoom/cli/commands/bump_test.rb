@@ -18,7 +18,7 @@ module Spoom
           FileUtils.remove_dir(TEMPORARY_DIRECTORY, true)
         end
 
-        def test_bump_files_one_error_one_no_error_acceptance
+        def test_bump_files_one_error_no_bump_one_no_error_bump
           content1 = <<~STR
             # typed: false
             class A; end
@@ -42,6 +42,22 @@ module Spoom
           assert_equal("true", strictness1)
           assert_equal("false", strictness2)
         end
+
+        def test_bump_nondefault_from_to_complete
+          from = "ignore"
+          to = "strict"
+
+          content = <<~STR
+            # typed: #{from}
+            class A; end
+          STR
+
+          run_cli(TEMPORARY_DIRECTORY, "bump --from #{from} --to #{to}")
+
+        end
+
+        # def test_bump_nondefault_from_to_revert
+        # end
       end
     end
   end

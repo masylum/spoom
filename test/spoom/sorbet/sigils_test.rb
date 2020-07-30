@@ -24,30 +24,14 @@ module Spoom
 
       def test_valid_strictness_returns_true
         ["ignore", "false", "true", "strict", "strong", "   strong   "].each do |strictness|
-          content = <<~STR
-            # typed: #{strictness}
-            class A; end
-          STR
-          assert(Sigils.valid_strictness?(content))
+          assert(Sigils.valid_strictness?(strictness))
         end
       end
 
       def test_valid_strictness_false
         ["", "FALSE", "foo"].each do |strictness|
-          content = <<~STR
-            # typed: #{strictness}
-            class A; end
-          STR
-          refute(Sigils.valid_strictness?(content))
+          refute(Sigils.valid_strictness?(strictness))
         end
-      end
-
-      def test_valid_strictness_none_return_false
-        content = <<~STR
-          class A; end
-        STR
-
-        refute(Sigils.valid_strictness?(content))
       end
 
       def test_strictness_return_expected
@@ -57,7 +41,7 @@ module Spoom
             class A; end
           STR
 
-          strictness_found = Sigils.strictness(content)
+          strictness_found = Sigils.strictness_in_content(content)
 
           assert_equal(strictness.strip, strictness_found)
         end
@@ -68,7 +52,7 @@ module Spoom
           class A; end
         STR
 
-        strictness = Sigils.strictness(content)
+        strictness = Sigils.strictness_in_content(content)
         assert_nil(strictness)
       end
 
@@ -79,7 +63,7 @@ module Spoom
           class A; end
         STR
 
-        strictness = Sigils.strictness(content)
+        strictness = Sigils.strictness_in_content(content)
         assert_equal("true", strictness)
       end
 
@@ -90,7 +74,7 @@ module Spoom
           class A; end
         STR
 
-        strictness = Sigils.strictness(content)
+        strictness = Sigils.strictness_in_content(content)
         assert_equal("no", strictness)
       end
 
@@ -102,7 +86,7 @@ module Spoom
 
         new_content = Sigils.update_sigil(content, "false")
 
-        strictness = Sigils.strictness(new_content)
+        strictness = Sigils.strictness_in_content(new_content)
 
         assert_equal("false", strictness)
       end
@@ -115,7 +99,7 @@ module Spoom
 
         new_content = Sigils.update_sigil(content, "asdf")
 
-        strictness = Sigils.strictness(new_content)
+        strictness = Sigils.strictness_in_content(new_content)
 
         assert_equal("asdf", strictness)
       end
@@ -131,7 +115,7 @@ module Spoom
 
         assert(/^# typed: ignore$/.match?(new_content))
 
-        strictness = Sigils.strictness(new_content)
+        strictness = Sigils.strictness_in_content(new_content)
 
         assert_equal("true", strictness)
       end
