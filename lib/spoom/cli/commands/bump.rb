@@ -18,8 +18,8 @@ module Spoom
         option :from, type: :string
         option :to, type: :string
         option :force, type: :boolean, default: false, aliases: :f
-        sig { params(directory: String, tc_args: String).void }
-        def bump(directory = ".", tc_args = "")
+        sig { params(directory: String).void }
+        def bump(directory = ".")
           from = options[:from] ? options[:from] : Sorbet::Sigils::STRICTNESS_FALSE
           to = options[:to] ? options[:to] : Sorbet::Sigils::STRICTNESS_TRUE
 
@@ -37,13 +37,15 @@ module Spoom
 
           Sorbet::Sigils.change_sigil_in_files(files_to_bump, to)
 
-          output, no_errors = Sorbet.srb_tc(tc_args, File.expand_path(directory), capture_err: true)
+          output, no_errors = Sorbet.srb_tc(path: File.expand_path(directory), capture_err: true)
 
           return [] if no_errors
 
           errors = Sorbet::Errors::Parser.parse_string(output)
 
-          files_with_errors = errors.map(&:file).compact
+          files_with_errors = errors.map do |err|
+            File.join(directory, err.file)
+          end.compact
 
           Sorbet::Sigils.change_sigil_in_files(files_with_errors, from)
         end

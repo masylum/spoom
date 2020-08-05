@@ -1,4 +1,4 @@
-# typed: true
+# typed: false
 # frozen_string_literal: true
 
 require 'pathname'
@@ -21,11 +21,11 @@ module Spoom
 
         # TODO: add directory to the config?
         # Q: is this the right place for setting the config?
-        # def setup
-        #   use_sorbet_config(TEMPORARY_DIRECTORY, <<~CFG)
-        #     .
-        #   CFG
-        # end
+        def setup
+          use_sorbet_config(PROJECT, <<~CFG)
+            .
+          CFG
+        end
 
         def teardown
           FileUtils.remove_dir(TEMPORARY_DIRECTORY, true)
@@ -47,7 +47,7 @@ module Spoom
           File.write("#{TEMPORARY_DIRECTORY}/file1.rb", content1)
           File.write("#{TEMPORARY_DIRECTORY}/file2.rb", content2)
 
-          Bump.new.bump(TEMPORARY_DIRECTORY)
+          Bump.new.bump("#{TEST_PROJECTS_PATH}/#{PROJECT}")
 
           strictness1 = Sorbet::Sigils.file_strictness("#{TEMPORARY_DIRECTORY}/file1.rb")
           strictness2 = Sorbet::Sigils.file_strictness("#{TEMPORARY_DIRECTORY}/file2.rb")
@@ -57,6 +57,9 @@ module Spoom
         end
 
         def test_bump_doesnt_change_sigils_outside_directory
+          skip
+          # use_sorbet_config(PROJECT, nil)
+
           content = <<~STR
             # typed: true
             T.reveal_type(1)
@@ -73,24 +76,25 @@ module Spoom
           File.delete("./file.rb")
         end
 
-        # def test_bump_nondefault_from_to_complete
-        #   from = "ignore"
-        #   to = "strict"
+        def test_bump_nondefault_from_to_complete
+          skip
+          from = "ignore"
+          to = "strict"
 
-        #   content = <<~STR
-        #     # typed: #{from}
-        #     class A; end
-        #   STR
+          content = <<~STR
+            # typed: #{from}
+            class A; end
+          STR
 
-        #   FileUtils.mkdir_p(TEMPORARY_DIRECTORY)
+          FileUtils.mkdir_p(TEMPORARY_DIRECTORY)
 
-        #   File.write("#{TEMPORARY_DIRECTORY}/file.rb", content)
+          File.write("#{TEMPORARY_DIRECTORY}/file.rb", content)
 
-        #   run_cli(TEMPORARY_DIRECTORY, "bump --from #{from} --to #{to}")
-        # end
+          run_cli(TEMPORARY_DIRECTORY, "bump --from #{from} --to #{to}")
+        end
 
-        # def test_bump_nondefault_from_to_revert
-        # end
+        def test_bump_nondefault_from_to_revert
+        end
       end
     end
   end
