@@ -19,8 +19,8 @@ module Spoom
           install_sorbet(PROJECT)
         end
 
-        # TODO: add directory to the config?
-        # Q: is this the right place for setting the config?
+        # TODO: get rid of the config at the end?
+
         def setup
           use_sorbet_config(PROJECT, <<~CFG)
             .
@@ -57,23 +57,21 @@ module Spoom
         end
 
         def test_bump_doesnt_change_sigils_outside_directory
-          skip
-          # use_sorbet_config(PROJECT, nil)
-
+          # skip
           content = <<~STR
             # typed: true
             T.reveal_type(1)
           STR
 
-          File.write("./file.rb", content)
+          File.write("file.rb", content)
 
           Bump.new.bump("#{TEST_PROJECTS_PATH}/#{PROJECT}")
 
-          strictness = Sorbet::Sigils.file_strictness("./file.rb")
+          strictness = Sorbet::Sigils.file_strictness("file.rb")
 
           assert_equal("true", strictness)
 
-          File.delete("./file.rb")
+          File.delete("file.rb")
         end
 
         def test_bump_nondefault_from_to_complete
