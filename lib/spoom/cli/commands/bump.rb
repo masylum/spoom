@@ -17,7 +17,7 @@ module Spoom
         desc "bump", "change Sorbet sigils from one strictness to another when no errors"
         option :from, type: :string
         option :to, type: :string
-        option :force, type: :boolean, default: false, aliases: :f #or bool? what is normal default for a boolean? check
+        option :force, type: :boolean, default: false, aliases: :f
         sig { params(directory: String).void }
         def bump(directory = ".")
           from = options[:from] ? options[:from] : Sorbet::Sigils::STRICTNESS_FALSE

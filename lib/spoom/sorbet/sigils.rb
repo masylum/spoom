@@ -32,7 +32,7 @@ module Spoom
       # returns true if the passed string is a valid strictness (else false)
       sig { params(strictness: String).returns(T::Boolean) }
       def self.valid_strictness?(strictness)
-        VALID_STRICTNESS.include?(strictness)
+        VALID_STRICTNESS.include?(strictness.strip)
       end
 
       # returns the strictness of a sigil in the passed file content string (nil if no sigil)
