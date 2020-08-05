@@ -12,7 +12,20 @@ module Spoom
         include Spoom::Cli::TestHelper
         extend Spoom::Cli::TestHelper
 
-        TEMPORARY_DIRECTORY = "test-bump"
+        PROJECT = "project-bump"
+        TEMPORARY_DIRECTORY = "#{TEST_PROJECTS_PATH}/#{PROJECT}/test-bump"
+
+        before_all do
+          install_sorbet(PROJECT)
+        end
+
+        # TODO: add directory to the config?
+        # Q: is this the right place for setting the config?
+        # def setup
+        #   use_sorbet_config(TEMPORARY_DIRECTORY, <<~CFG)
+        #     .
+        #   CFG
+        # end
 
         def teardown
           FileUtils.remove_dir(TEMPORARY_DIRECTORY, true)
@@ -26,7 +39,7 @@ module Spoom
 
           content2 = <<~STR
             # typed: false
-            T.reveal_type(1.to_s)
+            T.reveal_type(1)
           STR
 
           FileUtils.mkdir_p(TEMPORARY_DIRECTORY)
@@ -36,25 +49,45 @@ module Spoom
 
           Bump.new.bump(TEMPORARY_DIRECTORY)
 
-          strictness1 = Spoom::Sorbet::Sigils.file_strictness("#{TEMPORARY_DIRECTORY}/file1.rb")
-          strictness2 = Spoom::Sorbet::Sigils.file_strictness("#{TEMPORARY_DIRECTORY}/file2.rb")
+          strictness1 = Sorbet::Sigils.file_strictness("#{TEMPORARY_DIRECTORY}/file1.rb")
+          strictness2 = Sorbet::Sigils.file_strictness("#{TEMPORARY_DIRECTORY}/file2.rb")
 
           assert_equal("true", strictness1)
           assert_equal("false", strictness2)
         end
 
-        def test_bump_nondefault_from_to_complete
-          from = "ignore"
-          to = "strict"
-
+        def test_bump_doesnt_change_sigils_outside_directory
           content = <<~STR
-            # typed: #{from}
-            class A; end
+            # typed: true
+            T.reveal_type(1)
           STR
 
-          run_cli(TEMPORARY_DIRECTORY, "bump --from #{from} --to #{to}")
+          File.write("./file.rb", content)
 
+          Bump.new.bump("#{TEST_PROJECTS_PATH}/#{PROJECT}")
+
+          strictness = Sorbet::Sigils.file_strictness("./file.rb")
+
+          assert_equal("true", strictness)
+
+          File.delete("./file.rb")
         end
+
+        # def test_bump_nondefault_from_to_complete
+        #   from = "ignore"
+        #   to = "strict"
+
+        #   content = <<~STR
+        #     # typed: #{from}
+        #     class A; end
+        #   STR
+
+        #   FileUtils.mkdir_p(TEMPORARY_DIRECTORY)
+
+        #   File.write("#{TEMPORARY_DIRECTORY}/file.rb", content)
+
+        #   run_cli(TEMPORARY_DIRECTORY, "bump --from #{from} --to #{to}")
+        # end
 
         # def test_bump_nondefault_from_to_revert
         # end
